@@ -1,0 +1,89 @@
+
+<html>
+
+    <h1>To make a captive portal in linux </h1>
+    <br>
+
+    <h2>Dependencies </h2>
+    <ul>
+        <li>dnsmasq</li>
+        <li>hostapd</li>
+        <li>net-tools</li>
+        <li>apache2</li>
+    </ul>
+
+    <h2> step 2 </h2>
+    <br>
+    <h2>Make 2 files dnsmasq.conf and hostapd.conf</h2>
+    <br>
+    <a>Copy those all in those 2 file</a>
+    <br>
+    <h3>dnsmasq.conf</h3>
+    <br>
+    <textarea name="" id="textarea" style="width: 90%; height: 30vh; margin-left: 5%;">
+        #set your wireless interface name in my case wlan0
+        interface=wlan0
+
+        #set ip range there I set 2-50 
+        dhcp-range=192.168.0.2,192.168.0.50,12h
+
+        #set gateway there 3 means default gateway
+        dhcp-option=3,192.168.0.1
+
+        #dns server 6 means default dns server
+        dhcp-option=6,192.168.0.1
+
+        #redirect all request to 192.168.0.1
+        address=/#/192.168.0.1
+    </textarea>
+    <h3>hostapd.conf</h3>
+    <textarea name="" id="textarea" style="width: 90%; height: 30vh; margin-left: 5%;">
+        #infterface name
+        interface=wlan0
+
+        #driver default is nl80211
+        driver=nl80211
+
+        #wifi name change by your name
+        ssid=test
+
+        #channel
+        channel=1
+    </textarea>
+    <h2>After both file create save and exit</h2>
+    <h3>in terminal</h3>
+    <textarea name="" id="textarea" style="width: 90%; height: 10vh; margin-left: 5%;">
+        $ sudo dnsmasq -C <location_of_dnsmasq.conf>
+        $ sudo hostapd <location_of_hostapd.conf>
+        $ sudo ifconfig wlan0 192.168.0.1/24
+        #change wlan0 by your interface
+    </textarea>
+    <br><br>
+    <h2>When all setup done configure apache2</h2>
+    <textarea name="" id="textarea" style="width: 90%; height: 10vh; margin-left: 5%;">
+        $ sudo nano /etc/apache2/sites-available/000-dafault.conf
+    </textarea>
+    <br>
+    <h3>Add this line at the end</h3>
+    <textarea name="" id="textarea" style="width: 90%; height: 10vh; margin-left: 5%;">
+        <VirtualHost *:80>
+            ServerName localhost
+            ServerAlias *
+            DocumentRoot /var/www/html
+
+            # Optional: force redirect to your local page
+            RewriteEngine On
+            RewriteCond %{HTTP_HOST} !^192\.168\.0\.1$
+            RewriteRule ^.*$ http://192.168.0.1/ [R=302,L]
+        </VirtualHost>
+    </textarea>
+    <br>
+    <h3>After add</h3>
+    <textarea name="" id="textarea" style="width: 90%; height: 10vh; margin-left: 5%;">
+        $ sudo a2enmod rewrite
+        $ sudo systemctl restart apache2
+    </textarea>
+    <br><br>
+    <h1># try to open in windows instend of android </h1>
+</html>
+
